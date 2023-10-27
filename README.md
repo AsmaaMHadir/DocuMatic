@@ -1,2 +1,2 @@
 # DocuMatic
-Automate your Github code's documentation
+Automate your Python code's documentation on Github
