@@ -1,2 +1,2 @@
 # DocuMatic
-Automate your Python code's documentation on Github
+Generate an easy to read documentation for your repository instantly. Currently supports only Python. 
