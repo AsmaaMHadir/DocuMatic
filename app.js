@@ -1,8 +1,8 @@
 import dotenv from 'dotenv'
 import fs from 'fs'
-import http from 'http'
-import { App } from 'octokit'
 
+import { App } from 'octokit'
+import { get_py_files, get_repo_tree } from './get_repo_code.js'
 // Load environment variables from .env file
 dotenv.config()
 
@@ -10,12 +10,13 @@ dotenv.config()
 const appId = process.env.APP_ID
 const privateKeyPath = process.env.PRIVATE_KEY_PATH
 const privateKey = fs.readFileSync(privateKeyPath, 'utf8')
-const secret = process.env.WEBHOOK_SECRET
+//const secret = process.env.WEBHOOK_SECRET
 
 
 
 // Create an authenticated Octokit client authenticated as a GitHub App
 const installationID = process.env.APP_INSTALLATION_ID; // does the installation id change from machine to another 
+const authenToken = process.env.AUTH_TOKEN;
 
 const app = new App({
   appId: appId,
@@ -23,15 +24,13 @@ const app = new App({
 });
 
 
+
 // get repository content 
-const response = await app.octokit.request("GET /repos/{owner}/{repo}/issues", {
-  owner: "github",
-  repo: "docs",
-  per_page: 2
-});
-
-
-
+const tree  = await get_repo_tree("AsmaaMHadir","Predict-my-Math-Grade-","main",authenToken);
+console.time("Mytimer");
+const result = await get_py_files(tree, authenToken);
+console.timeEnd("Mytimer");
+console.log(result['data_ingestion.py']);
 
 
 
