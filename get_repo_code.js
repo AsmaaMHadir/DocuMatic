@@ -1,17 +1,18 @@
-import {decodeBase64, processPath, getKeyByValue} from "./utils.js"
-import { Octokit } from "octokit";
-// owner = username
+import {decodeBase64} from "./utils.js"
 
-
-// get repo tree and extract ".py files"
-
+const cache = {};
 // step 1- get repo tree recursively as Json
-export const get_repo_tree = async (owner, repoName, branchName,authenToken) =>{
+export const get_repo_tree = async (owner, repoName, branchName,okt) =>{
 
-    const octokit = new Octokit({
-        auth: authenToken
-      });
-    const response = await octokit.request('GET /repos/{owner}/{repo}/git/trees/{tree_sha}?recursive=true', {
+    // Define a unique key for this request based on owner, repoName, and branchName.
+    const cacheKey = `${owner}-${repoName}-${branchName}`;
+
+    if (cache[cacheKey]) {
+      // If the data is in the cache, return it.
+      return cache[cacheKey];
+    }
+  
+    const response = await okt.request('GET /repos/{owner}/{repo}/git/trees/{tree_sha}?recursive=true', {
         owner: owner,
         repo: repoName,
         tree_sha: branchName,
@@ -23,17 +24,20 @@ export const get_repo_tree = async (owner, repoName, branchName,authenToken) =>{
 
     const data = response.data;
     const repo_tree = data.tree;
+
+    
+    // Store the fetched data in the cache for later use.
+    cache[cacheKey] = repo_tree;
     return repo_tree;
 }
 
-export const get_py_files = async (tree,authenToken) => {
+const py_files_cache = {};
+
+export const get_py_files = async (tree,okt) => {
 
     const indices = Object.keys(tree);
     const fileUrls = [];
-  const fileContents = []
-    const octokit = new Octokit({
-      auth: authenToken
-    });
+    const fileContents = []
 
     for (const idx in indices){
       if ( tree[idx].path.endsWith('.py')){
@@ -52,22 +56,39 @@ export const get_py_files = async (tree,authenToken) => {
     const urlsPromises = fileUrls.map(async (url)=>{
     
       try{
-        const response = await octokit.request(url, {
-          headers: {
-            'X-GitHub-Api-Version': '2022-11-28'
-            
-          }
-        });
 
+        const cacheKey = url;
+
+        if (cache[cacheKey]) {
+          // If the data is in the cache, use it.
+          fileContents.push(cache[cacheKey]);
+        } else{
+          const response = await okt.request(url, {
+            headers: {
+              'X-GitHub-Api-Version': '2022-11-28'
+              
+            }
+          });
+
+          
       const data = response.data;
 
       // get encoded content 
       const file_content = data.content;
       //console.log(file_content);
       if (file_content != undefined){
+
+          const filecont = decodeBase64(file_content);
           // append to dictionary
-          fileContents.push(decodeBase64(file_content));
-      }
+          fileContents.push(filecont);
+
+          // Store the fetched data in the cache for later use
+          cache[cacheKey] =filecont;
+        }
+
+        }
+    
+
       }catch(error){
         console.error(`Error fetching: ${error.message}`);
 
