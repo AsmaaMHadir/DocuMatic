@@ -30,7 +30,7 @@ const tree  = await get_repo_tree("AsmaaMHadir","Predict-my-Math-Grade-","main",
 console.time("Mytimer");
 const result = await get_py_files(tree, authenToken);
 console.timeEnd("Mytimer");
-console.log(result['data_ingestion.py']);
+console.log(result);
 
 
 

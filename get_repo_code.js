@@ -1,4 +1,4 @@
-import {decodeBase64, processPath} from "./utils.js"
+import {decodeBase64, processPath, getKeyByValue} from "./utils.js"
 import { Octokit } from "octokit";
 // owner = username
 
@@ -29,41 +29,56 @@ export const get_repo_tree = async (owner, repoName, branchName,authenToken) =>{
 export const get_py_files = async (tree,authenToken) => {
 
     const indices = Object.keys(tree);
-    const file_dict = {};
+    const fileUrls = [];
+  const fileContents = []
+    const octokit = new Octokit({
+      auth: authenToken
+    });
+
     for (const idx in indices){
       if ( tree[idx].path.endsWith('.py')){
-    
-        // get file name
-        const fileName = processPath(tree[idx].path);
 
         // get url 
         const content_url = tree[idx].url;
-     
-        // make api call to the url
-        const octokit = new Octokit({
-            auth: authenToken
-          });
-        const response = await octokit.request(content_url, {
-            headers: {
-              'X-GitHub-Api-Version': '2022-11-28'
-              
-            }
-          });
-    
-        const data = response.data;
- 
-        // get encoded content 
-        const file_content = data.content;
-        //console.log(file_content);
-        if (file_content != undefined){
-            // append to dictionary
-            file_dict[fileName] = decodeBase64(file_content);
-        }
 
+        
+        fileUrls.push(content_url);
       }
     
     }
-    return file_dict;
+
+    // postcondition: fileUrls contains all python filescontent urls
+    
+    const urlsPromises = fileUrls.map(async (url)=>{
+    
+      try{
+        const response = await octokit.request(url, {
+          headers: {
+            'X-GitHub-Api-Version': '2022-11-28'
+            
+          }
+        });
+
+      const data = response.data;
+
+      // get encoded content 
+      const file_content = data.content;
+      //console.log(file_content);
+      if (file_content != undefined){
+          // append to dictionary
+          fileContents.push(decodeBase64(file_content));
+      }
+      }catch(error){
+        console.error(`Error fetching: ${error.message}`);
+
+      }
+  
+
+    });
+    
+    await Promise.all(urlsPromises);
+
+    return fileContents;
   }
   
   

@@ -18,3 +18,11 @@ export const processPath = (filePath) =>{
     }
 }
 
+export function getKeyByValue(object, targetValue) {
+  for (const key in object) {
+    if (object.hasOwnProperty(key) && object[key] === targetValue) {
+      return key;
+    }
+  }
+  return null; // Return null if the value is not found
+}
