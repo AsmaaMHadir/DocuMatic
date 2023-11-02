@@ -1,2 +1,5 @@
 # DocuMatic
-Github NodeJS app to generate an easy to read static documentation page for your repository instantly (ideally for those working on open source projects and would like to have a quick way to automate keeping track of code documentation). Currently supports Python code only. 
+
+ **DocuMatic** generates a markdown page of your code's documentation automatically. Supports many programming languages including:
+ 
+ <a href="https://www.python.org" target="_blank" rel="noreferrer"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/python/python-original.svg" alt="python" width="40" height="40"/> </a><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank" rel="noreferrer"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/javascript/javascript-original.svg" alt="javascript" width="40" height="40"/> </a><a href="https://www.w3schools.com/cpp/" target="_blank" rel="noreferrer"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/cplusplus/cplusplus-original.svg" alt="cplusplus" width="40" height="40"/> </a>
