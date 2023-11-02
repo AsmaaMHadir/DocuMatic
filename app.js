@@ -1,13 +1,14 @@
 import dotenv from 'dotenv'
 import fs from 'fs'
 
+import { OpenAIclass } from "./OpenAI.js";
 import { App,  Octokit } from 'octokit'
-import { get_py_files, get_repo_tree } from './get_repo_code.js'
-import {cleanCodeArray} from './utils.js'
-// Load environment variables from .env file
+import { get_content_by_file_path, get_content_by_folder } from './Repo_code.js'
+import {cleanCodeArray, generatePrompt} from './utils.js'
+
 dotenv.config()
 
-// Set configured values
+
 const appId = process.env.APP_ID
 const privateKeyPath = process.env.PRIVATE_KEY_PATH
 const privateKey = fs.readFileSync(privateKeyPath, 'utf8')
@@ -27,17 +28,30 @@ const app = new App({
 const octokit = await app.getInstallationOctokit(installationID);
 
 
-// Test <-- write unit tests
-const tree  = await get_repo_tree("AsmaaMHadir","Customer-Relationship-Manager","main",octokit);
+console.log('started function')
+//const fileContent  = await get_content_by_file_path("AsmaaMHadir","ivy","ivy/functional/frontends/mxnet/numpy/linalg.py",octokit);
 
-const result = await get_py_files(tree, octokit);
+// const folderFilesContents = await get_content_by_folder("AsmaaMHadir","ivy","ivy/functional/frontends/mxnet/numpy",octokit)
+// console.log('getting file content done..');
+// console.log(folderFilesContents);
 
-const cleanedResult = cleanCodeArray(result);
+// Creating a new instance of the OpenAI class and passing in the OPENAI_KEY environment variable
 
-// postcondition: code from each py file is stored inside cleanedResult
+console.log('calling the openai chat completion ')
+const openAI = new OpenAIclass(process.env.OPENAI_KEY);
+const codeSnippet = "";
+const model = 'gpt-3.5-turbo';
 
 
-
-
-
+console.log('querying chatgpt')
+// Use the generateText method to generate text from the OpenAI API and passing the generated prompt, the model and max token value
+await openAI.generateText(generatePrompt(codeSnippet), model, 800)
+    .then(text => {
+        // Logging the generated text to the console
+        // In the future, this will be replaced to upload the returned blog text to a WordPress site using the WordPress REST API
+        console.log(text);
+    })
+    .catch(error => {
+        console.error(error);
+    });
 
